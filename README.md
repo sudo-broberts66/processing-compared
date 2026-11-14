@@ -1,6 +1,6 @@
 # Two Ways to Process
 
-An interactive, animated diorama for high school students. It follows one sentence from a teacher through a human brain and through an AI agent, side by side, in six matched stages:
+A full-screen, interactive 3D tabletop for high school students. It follows one sentence from a teacher through two models standing side by side, a cutaway human head and an AI agent machine, in six matched stages:
 
 1. Take it in
 2. Pay attention
@@ -9,14 +9,25 @@ An interactive, animated diorama for high school students. It follows one senten
 5. Save it
 6. Bring it back
 
-Each stage animates and is annotated. Four switches let students cause forgetting (a phone buzz, no review or sleep, a flooded context window, a session that ends without notes) and see what it does to the answer at the end.
+The five details in the sentence travel through both models as labelled blocks. Four switches cause forgetting (a phone buzz, no review or sleep, a flooded context window, a session that ends without notes); lost details drop into a "Forgotten" tray, and at stage 6 each model answers from whatever is left.
 
 ## Use it
 
-Open `index.html` in any modern browser. It is a single self-contained file with no build step. Fonts load from Google Fonts when online and fall back to system fonts offline.
+Open `index.html` in any modern browser. There is no build step.
 
-- **Next / Back / Play**, the numbered stage buttons, or the left and right arrow keys move through the stages.
-- Click any labelled part of either picture for a short definition.
-- The **Cause forgetting** switches jump to the stage where their effect first shows.
+- **Next / Back / Play**, the numbered stage buttons, or the left and right arrow keys change stage. The camera reframes for each one.
+- **Drag** to look around, **scroll or pinch** to zoom, **shift-drag** (or two fingers) to pan. The target button at top right recentres.
+- **Tap a part** or its label for a short definition.
+- The switches under each model, or the matching objects on the table (phone, alarm clock, paper stack, strapped notebook), turn forgetting on and off.
+- On a phone held upright, the view shows one model at a time; use the two tabs to swap.
+
+## Files
+
+- `index.html`: the whole page.
+- `vendor/three.min.js`: Three.js r128 (MIT, see `vendor/three.LICENSE`). The page loads it from cdnjs first and falls back to this copy, so it also works with no internet.
+
+Fonts load from Google Fonts when online and fall back to system fonts offline. If a device cannot provide 3D graphics, the page shows the six stages as text instead.
+
+The earlier flat, scrolling version is in the git history.
 
 To host it, enable GitHub Pages for this repository and serve from the root.
