@@ -41,7 +41,7 @@ body {
   font: 400 16px/1.45 var(--font-body); -webkit-text-size-adjust: 100%;
   overscroll-behavior: none;
 }
-h1, h2, p, ul, ol { margin: 0; }
+h1, h2, h3, p, ul, ol { margin: 0; }
 button { font: inherit; color: inherit; cursor: pointer; }
 :focus-visible { outline: 2.5px solid var(--ink); outline-offset: 2px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -105,6 +105,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .sw[aria-checked="true"] .track { background: var(--forget); }
 .sw[aria-checked="true"] .track::after { transform: translateX(10px); }
 .cap-t { font-size: 1rem; max-width: 60ch; text-wrap: pretty; }
+.cap-hint { font-size: .8125rem; color: var(--forget); }
 .ans { border-top: 1px solid var(--line); padding-top: 6px; display: grid; gap: 3px; }
 .ans .a { font-weight: 700; }
 .ans .why { font-size: .8125rem; color: var(--muted); }
@@ -117,7 +118,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .dots { display: flex; gap: 3px; list-style: none; padding: 0; }
 .dots button {
   width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--muted); background: none; color: var(--muted);
-  font: 700 .75rem var(--font-mono); padding: 0;
+  font: 700 .75rem var(--font-mono); padding: 0; position: relative;
+}
+.dots button.mark::after {
+  content: ""; position: absolute; top: -4px; right: -4px; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--forget); border: 2px solid var(--surface);
 }
 .dots button[aria-current="step"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
 .stage-n { font: 800 1rem var(--font-display); min-width: 7.2em; white-space: nowrap; }
@@ -134,6 +139,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .sheet { position: fixed; inset: 0; z-index: 4; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--bg) 70%, transparent); }
 .sheet-in { max-width: 34rem; max-height: 100%; overflow: auto; background: var(--surface); border: 1.5px solid var(--ink); border-radius: 16px; padding: 18px 20px; display: grid; gap: 12px; }
 .sheet h2 { font: 800 1.35rem/1.15 var(--font-display); }
+.sheet h3 { font: 800 1.0625rem/1.2 var(--font-display); }
+#info-more { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; }
 .sheet ul, .sheet ol { padding-left: 1.1em; display: grid; gap: 8px; font-size: .9375rem; }
 .sheet li b { display: block; }
 .sheet .hint { font-size: .875rem; color: var(--muted); }
@@ -154,7 +161,6 @@ body.portrait .ctl { display: grid; grid-template-columns: auto auto; justify-co
 body.portrait .dots { align-items: center; }
 body.portrait .dots button { width: 22px; height: 22px; }
 body.portrait .btn { padding: 4px 10px; }
-@media (max-width: 420px) { body.portrait #play { display: none; } }
 </style>
 </head>
 <body class="focus-brain">
@@ -185,6 +191,7 @@ body.portrait .btn { padding: 4px 10px; }
         <button class="sw" type="button" role="switch" aria-checked="false" id="sw-noReview" data-sw="noReview"><span class="track"></span>No review, no sleep</button>
       </div>
       <p class="cap-t" id="cap-brain"></p>
+      <p class="cap-hint" id="hint-brain" hidden></p>
       <div class="ans" id="ans-brain" hidden></div>
     </section>
     <section class="cap cap--ai panel" aria-label="Me, an AI agent">
@@ -194,6 +201,7 @@ body.portrait .btn { padding: 4px 10px; }
         <button class="sw" type="button" role="switch" aria-checked="false" id="sw-noNotes" data-sw="noNotes"><span class="track"></span>End without notes</button>
       </div>
       <p class="cap-t" id="cap-ai"></p>
+      <p class="cap-hint" id="hint-ai" hidden></p>
       <div class="ans" id="ans-ai" hidden></div>
     </section>
     <nav class="ctl panel" aria-label="Stages">
@@ -201,7 +209,6 @@ body.portrait .btn { padding: 4px 10px; }
       <span class="stage-n" id="stage-n"></span>
       <div class="btns">
         <button class="btn" id="back" type="button">Back</button>
-        <button class="btn" id="play" type="button" aria-pressed="false">Play</button>
         <button class="btn primary" id="next" type="button">Next</button>
       </div>
     </nav>
@@ -212,15 +219,23 @@ body.portrait .btn { padding: 4px 10px; }
 
 <div class="sheet" id="info" hidden>
   <div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="info-h">
-    <h2 id="info-h">Where the comparison breaks down</h2>
+    <h2 id="info-h">One message, two kinds of memory</h2>
+    <p>A teacher gives five details. Follow them through a human brain and an AI agent. Both sides move together: every step shows the same moment in each, so you can compare them.</p>
     <ul>
-      <li><b>Your brain rewires itself.</b>Learning physically changes the connections between your neurons. My weights do not change while we talk.</li>
-      <li><b>Your forgetting is gradual and often useful.</b>Mine is mostly a space limit: text is either still in the window or it is gone.</li>
-      <li><b>You don't choose most of what you keep.</b>I keep only what gets written down, by me or by the system I run in.</li>
-      <li><b>Both models are simplified.</b>A real brain has no tidy rooms, and I have no tank inside me, only arithmetic on tokens.</li>
+      <li>Next and Back, or the arrow keys, move through the six steps.</li>
+      <li>Flip a switch under either model to cause forgetting. It takes effect at the step marked in amber.</li>
+      <li>Drag to look around, scroll or pinch to zoom, and tap any part to see what it is.</li>
     </ul>
-    <p class="hint">Drag to look around, scroll or pinch to zoom, and tap any part to see what it is. Arrow keys change stage.</p>
-    <button class="btn primary" id="info-close" type="button" style="justify-self:start">Close</button>
+    <div id="info-more" hidden>
+      <h3>Where the comparison breaks down</h3>
+      <ul>
+        <li><b>Your brain rewires itself.</b>Learning physically changes the connections between your neurons. My weights do not change while we talk.</li>
+        <li><b>Your forgetting is gradual and often useful.</b>Mine is mostly a space limit: text is either still in the window or it is gone.</li>
+        <li><b>You don't choose most of what you keep.</b>I keep only what gets written down, by me or by the system I run in.</li>
+        <li><b>Both models are simplified.</b>A real brain has no tidy rooms, and I have no tank inside me, only arithmetic on tokens.</li>
+      </ul>
+    </div>
+    <button class="btn primary" id="info-close" type="button" style="justify-self:start">Start</button>
   </div>
 </div>
 
@@ -251,8 +266,13 @@ body.portrait .btn { padding: 4px 10px; }
     { id: 'time', label: '8:15' }
   ];
   var NAMES = ['Take it in', 'Pay attention', 'Hold it', 'Connect it', 'Save it', 'Bring it back'];
-  var EFFECT_STAGE = { distraction: 2, noReview: 5, flood: 3, noNotes: 5 };
-  var S = { stage: 1, phase: 'final', sw: { distraction: false, noReview: false, flood: false, noNotes: false }, playing: false, focus: 'brain' };
+  // the step where each switch's loss is seen
+  var EFFECT_STAGE = { distraction: 3, noReview: 5, flood: 3, noNotes: 6 };
+  var SW_INFO = {
+    distraction: { side: 'brain', name: 'The phone buzz' }, noReview: { side: 'brain', name: 'No review or sleep' },
+    flood: { side: 'ai', name: 'The flood' }, noNotes: { side: 'ai', name: 'Ending without notes' }
+  };
+  var S = { stage: 1, phase: 'final', sw: { distraction: false, noReview: false, flood: false, noNotes: false }, focus: 'brain' };
 
   function captions(stage) {
     var d = S.sw.distraction, r = S.sw.noReview, f = S.sw.flood, n = S.sw.noNotes;
@@ -962,21 +982,32 @@ body.portrait .btn { padding: 4px 10px; }
       $('msg').innerHTML = stage === 6
         ? '<span class="who">A friend, later</span>“What do I need for the trip?”'
         : '<span class="who">Teacher</span>“Field trip is <b>Thursday</b>. Bring <b>$5</b> and a <b>signed form</b>. Meet at <b>Gate B</b> at <b>8:15</b>.”';
+      var armed = Object.keys(S.sw).filter(function (k) { return S.sw[k]; });
       document.querySelectorAll('#dots button').forEach(function (b, i) {
         if (i + 1 === stage) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+        var mark = armed.some(function (k) { return EFFECT_STAGE[k] === i + 1; });
+        b.classList.toggle('mark', mark);
+        b.setAttribute('aria-label', 'Step ' + (i + 1) + ': ' + NAMES[i] + (mark ? '. Forgetting happens here.' : ''));
+        b.title = NAMES[i] + (mark ? ' (forgetting happens here)' : '');
+      });
+      ['brain', 'ai'].forEach(function (side) {
+        var ahead = armed.filter(function (k) { return SW_INFO[k].side === side && EFFECT_STAGE[k] > stage; });
+        var h = $('hint-' + side);
+        h.hidden = !ahead.length;
+        h.textContent = ahead.map(function (k) { return SW_INFO[k].name + ' takes effect at step ' + EFFECT_STAGE[k] + '.'; }).join(' ');
       });
       $('back').disabled = stage === 1;
       $('next').textContent = stage === 6 ? 'Start over' : 'Next';
       rooms.forEach(function (r) { r.target = ACTIVE[r.side][stage].indexOf(r.key) >= 0 ? 1 : 0; });
       labels.forEach(function (l) { l.el.classList.toggle('on', ACTIVE[l.side][stage].indexOf(l.part.split(':')[1]) >= 0); });
       if (phase === 'final') {
-        $('live').textContent = 'Stage ' + stage + ' of 6, ' + NAMES[stage - 1] + '. Brain: ' + c.brain + ' AI: ' + c.ai +
+        $('live').textContent = 'Step ' + stage + ' of 6, ' + NAMES[stage - 1] + '. Brain: ' + c.brain + ' AI: ' + c.ai +
           (done ? ' Brain answers: ' + $('ans-brain').textContent + ' AI answers: ' + $('ans-ai').textContent : '');
       }
     }
 
     /* ---------- render + navigation ---------- */
-    var tPhase, tAuto;
+    var tPhase;
     function render(phase) {
       S.phase = phase;
       layoutBrain(S.stage, phase); layoutAI(S.stage, phase);
@@ -997,20 +1028,7 @@ body.portrait .btn { padding: 4px 10px; }
         }, 1500);
       } else render('final');
     }
-    function setPlaying(p) {
-      S.playing = p; clearTimeout(tAuto);
-      $('play').textContent = p ? 'Pause' : 'Play'; $('play').setAttribute('aria-pressed', p ? 'true' : 'false');
-      if (!p) return;
-      if (S.stage === 6) go(1, false);
-      tick();
-    }
-    function tick() {
-      var half = portrait ? 5500 : 0;
-      if (half) { setFocus('brain'); tAuto = setTimeout(function () { setFocus('ai'); tAuto = setTimeout(advance, half); }, half); }
-      else tAuto = setTimeout(advance, 8500);
-    }
-    function advance() { if (S.stage < 6) { go(S.stage + 1, true); tick(); } else setPlaying(false); }
-    function manual(stage) { if (S.playing) setPlaying(false); go(stage, true); }
+    function manual(stage) { go(stage, true); }
     function setFocus(side) {
       S.focus = side;
       document.body.classList.toggle('focus-brain', side === 'brain'); document.body.classList.toggle('focus-ai', side === 'ai');
@@ -1021,31 +1039,40 @@ body.portrait .btn { padding: 4px 10px; }
     function toggle(k) {
       S.sw[k] = !S.sw[k];
       $('sw-' + k).setAttribute('aria-checked', S.sw[k] ? 'true' : 'false');
-      if (S.playing) setPlaying(false);
-      if (portrait) setFocus(k === 'flood' || k === 'noNotes' ? 'ai' : 'brain');
-      if (S.sw[k] && S.stage < EFFECT_STAGE[k]) go(EFFECT_STAGE[k], true); else go(S.stage, false);
+      if (portrait) setFocus(SW_INFO[k].side);
+      go(S.stage, false);          // never changes the step: the switch acts when its step is reached
     }
 
     NAMES.forEach(function (n, i) {
       var li = document.createElement('li'), b = document.createElement('button');
       b.type = 'button'; b.id = 'step-' + (i + 1); b.textContent = i + 1;
-      b.setAttribute('aria-label', 'Stage ' + (i + 1) + ': ' + n); b.title = n;
       b.addEventListener('click', function () { manual(i + 1); });
       li.appendChild(b); $('dots').appendChild(li);
     });
     $('back').addEventListener('click', function () { if (S.stage > 1) manual(S.stage - 1); });
     $('next').addEventListener('click', function () { manual(S.stage === 6 ? 1 : S.stage + 1); });
-    $('play').addEventListener('click', function () { setPlaying(!S.playing); });
     $('recentre').addEventListener('click', recentre);
-    $('tab-brain').addEventListener('click', function () { if (S.playing) setPlaying(false); setFocus('brain'); });
-    $('tab-ai').addEventListener('click', function () { if (S.playing) setPlaying(false); setFocus('ai'); });
-    $('info-open').addEventListener('click', function () { $('info').hidden = false; $('info-close').focus(); });
-    $('info-close').addEventListener('click', function () { $('info').hidden = true; $('info-open').focus(); });
-    $('info').addEventListener('click', function (e) { if (e.target === $('info')) $('info').hidden = true; });
+    $('tab-brain').addEventListener('click', function () { setFocus('brain'); });
+    $('tab-ai').addEventListener('click', function () { setFocus('ai'); });
+    var welcome = false;
+    function openInfo(asWelcome) {
+      welcome = asWelcome;
+      $('info-more').hidden = asWelcome;
+      $('info-close').textContent = asWelcome ? 'Start' : 'Close';
+      $('info').hidden = false; $('info-close').focus();
+    }
+    function closeInfo() {
+      if ($('info').hidden) return;
+      $('info').hidden = true;
+      (welcome ? $('next') : $('info-open')).focus();
+    }
+    $('info-open').addEventListener('click', function () { openInfo(false); });
+    $('info-close').addEventListener('click', closeInfo);
+    $('info').addEventListener('click', function (e) { if (e.target === $('info')) closeInfo(); });
     document.querySelectorAll('.sw').forEach(function (b) { b.addEventListener('click', function () { toggle(b.getAttribute('data-sw')); }); });
     document.addEventListener('keydown', function (e) {
       if (e.altKey || e.ctrlKey || e.metaKey) return;
-      if (e.key === 'Escape') { hidePop(); $('info').hidden = true; return; }
+      if (e.key === 'Escape') { hidePop(); closeInfo(); return; }
       if (!$('info').hidden) return;
       if (e.key === 'ArrowRight' && S.stage < 6) { e.preventDefault(); manual(S.stage + 1); }
       else if (e.key === 'ArrowLeft' && S.stage > 1) { e.preventDefault(); manual(S.stage - 1); }
@@ -1113,10 +1140,12 @@ body.portrait .btn { padding: 4px 10px; }
     placeCamera(1);
     instant = false;
     frame();
+    openInfo(true);
     window.__diorama = {
       get stage() { return S.stage; }, get phase() { return S.phase; }, get sw() { return Object.assign({}, S.sw); },
       fates: function (side) { return fates(side, S.stage, S.phase); },
-      camera: function () { return { th: cam.th, el: cam.el, zoom: cam.zoom, d: cam.d }; }
+      camera: function () { return { th: cam.th, el: cam.el, zoom: cam.zoom, d: cam.d }; },
+      pickAt: function (x, y) { return pick({ clientX: x, clientY: y }); }
     };
   }
 })();

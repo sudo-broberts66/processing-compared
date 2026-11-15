@@ -15,10 +15,11 @@ The five details in the sentence travel through both models as labelled blocks. 
 
 Open `index.html` in any modern browser. There is no build step.
 
-- **Next / Back / Play**, the numbered stage buttons, or the left and right arrow keys change stage. The camera reframes for each one.
+- A short welcome card opens first; press **Start**. The **i** button brings it back, along with notes on where the comparison breaks down.
+- **Next / Back**, the numbered step buttons, or the left and right arrow keys change step. Both models move together, and the camera reframes for each step.
 - **Drag** to look around, **scroll or pinch** to zoom, **shift-drag** (or two fingers) to pan. The target button at top right recentres.
 - **Tap a part** or its label for a short definition.
-- The switches under each model, or the matching objects on the table (phone, alarm clock, paper stack, strapped notebook), turn forgetting on and off.
+- The switches under each model, or the matching objects on the table (phone, alarm clock, paper stack, strapped notebook), turn forgetting on and off. Flipping one never changes the step: an amber dot marks the step where it will take effect, and if you are already past that step the view updates in place.
 - On a phone held upright, the view shows one model at a time; use the two tabs to swap.
 
 ## Files
